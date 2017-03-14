@@ -18,7 +18,7 @@ from tornado.log import LogFormatter
 from tornado.options import define, options, parse_command_line, parse_config_file
 from tornado.web import Application
 
-from loopchat.auxiliaries import is_text
+from loopchat.auxiliaries import is_list, is_text
 from loopchat.db import CRUD
 from loopchat.routes import routes
 from loopchat.settings import settings
@@ -32,15 +32,18 @@ if not options.log_file_prefix:
 define('db_host',   default='127.0.0.1')
 define('db_user',   default='root')
 define('db_passwd', default='')
-define('db_db',     default='users')
+
+define('db_db',     default='')
+define('db_table',  default='')
 define('db_schema', default=[])
 
-define('username',   default='')
-define('admin',      default='')
-define('isban',      default='')
-define('banunt',   default='')
-define('bancom', default='')
-define('avatar',     default='')
+define('username',  default='')
+define('admin',     default='')
+define('isban',     default='')
+define('banunt',    default='')
+define('bancom',    default='')
+define('name',      default='')
+define('avatar',    default='')
 
 class Loopchat(Application):
     def __init__(self):
@@ -68,11 +71,15 @@ def main():
         # Connection with twemproxy which holds the whole Redis cluster
         app.redis_cluster = Redis()
 
+        options_error = (
+            'Please provide %s in the /etc/loopchat.conf\n'
+            'Check out REEDME.md for the details'
+        )
+
         try:
             parse_config_file('/etc/loopchat.conf')
         except Exception as e:
-            print "Please provide valid configuration in the /etc/loopchat.conf"
-            print 'Check out REEDME.md for the details'
+            print options_error % "valid configuration"
             sys.exit(1)
 
         # Prepare secondary log handler
@@ -88,24 +95,50 @@ def main():
         # Prevent duplicate logging
         logger.propagate = False
 
-        # Provide the Application with CRUD instance
-        app.crud = CRUD(
+        # Check options for all the required variables
+        if (not options.db_db or not options.db_table or not options.db_schema:
+            logging.error(options_error % 'all required options')
+            sys.exit(1)
+        elif not is_list(options.db_schema):
+            logging.error(options_error % 'db_schema variable as list')
+            sys.exit(1)
+        else:
+            for opt in ['db_host', 'db_user', 'db_passwd', 'db_db', 'db_table']:
+                if not is_text(options.get(opt)):
+                    logging_error(
+                        "%s should be of string type! %s provided instead" % (
+                            opt, str(type(opt))
+                        )
+                    )
+                    sys.exit(1)
+
+            for f in options.db_schema:
+                if not is_text(f):
+                    logging.error(
+                        options_error % 'valid fieldnames in db_schema variable'
+                    )
+                    sys.exit(1)
+
+        # Provide the Application with the CRUD instance
+        crud = CRUD(
+            app,
+            options.db_db,
+            options.db_schema,
+            options.db_table,
             host   = options.db_host,
             passwd = options.db_passwd,
-            user   = options.db_user,
-            db     = options.db_db
+            user   = options.db_user
         )
+        # Mutual binding!
+        app.crud = crud
 
         # Check if username field is present since it is required
         if not options.username:
-            logging.error(
-                'Please provide "username" option in the /etc/loopchat.conf\n'
-                'Check out REEDME.md for the details'
-            )
+            logging.error(options_error % '"username" option')
             sus.exit(1)
         # Provide the Application with dict of the required fieldnames
         app.fields = {}
-        for f in ['username', 'admin', 'isban', 'banunt', 'bancom', 'avatar']:
+        for f in ['username','admin','isban','banunt','bancom','name','avatar']:
             value = options.get(f, '')
             if is_text(value):
                 app.fields[f] = value

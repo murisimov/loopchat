@@ -16,6 +16,10 @@ class PollingHandler(WebSocketHandler):
         self.channels = [
             'common', 'delete', 'edit', 'info', 'system', 'ban'
         ]
+        self.ban_error = (
+            "WARNING: to enable ban abilities, specify all required variables "
+            "in /etc/loopchat.conf. Check out README.md for the details."
+        )
         self.listen()
 
     def check_origin(self, origin):
@@ -44,6 +48,10 @@ class PollingHandler(WebSocketHandler):
     @property
     def crud(self):
         return self.application.crud
+
+    @property
+    def fields(self):
+        return self.application.fields
 
     @coroutine
     def listen(self):
@@ -86,6 +94,9 @@ class PollingHandler(WebSocketHandler):
 
     @coroutine
     def ban(self, details):
+        if not self.application.moderation:
+            logging.warning(self.ban_error)
+            raise Return()
         self.isban = True
         self.ban_expires = t.to_dt(details['until']) - dt.now()
         if int(details['time']) > 48:
@@ -129,17 +140,28 @@ class PollingHandler(WebSocketHandler):
             logging.error("User %s does not exist." % self.username)
             self.close()
         else:
-            self.nickname, self.avatar = user['name'], user['avatar']
+            self.nickname, self.avatar = (
+                user[self.fields['name']],
+                user[self.fields['avatar']]
+            )
 
-            # Ban checks
-            self.isban = True if int(user['isban']) else False
-            self.ban_expires = user['banuntil'] - dt.now() if self.isban else None
-            if self.isban:
-                log.info(user['bancomment'].decode('string_escape'))
+            if self.application.moderation:
+                # Ban checks
+                self.isban = True if int(user[self.fields['isban']]) else False
+                if self.isban:
+                    self.ban_expires = user[self.fields['banunt']] - dt.now()
+                else:
+                    self.ban_expires = None
+                if self.isban:
+                    log.info(user[self.fields['bancom']].decode('string_escape'))
 
-            # Admin checks
-            self.admin = True if user['groupid'] == 1 else False
-            if self.admin: yield self.client.pubsub_subscribe('users')
+                # Admin checks
+                self.admin = True if user[self.fields['admin']] else False
+                if self.admin: yield self.client.pubsub_subscribe('users')
+            else:
+                self.admin       = False
+                self.isban       = False
+                self.ban_expires = False
 
             # Send last messages
             idle = True
@@ -263,6 +285,9 @@ class PollingHandler(WebSocketHandler):
             yield self.pubsub.call("PUBLISH", channel, str(value))
 
         elif channel == 'ban':
+            if not self.application.moderation:
+                logging.warning(self.ban_error)
+                raise Return()
             if not self.admin:
                 log.warning(forbidden)
                 raise Return()
@@ -275,9 +300,14 @@ class PollingHandler(WebSocketHandler):
             logging.warning(name)
             row = yield self.crud.get_user(name)
             # Return if user has been already banned
-            if int(row['isban']):
-                log.warning('User %s is already banned until %s for:\n"%s"' %
-                           (row['user'], row['banuntil'], row['bancomment']))
+            if int(row[self.fields['isban']]):
+                log.warning(
+                    'User %s is already banned until %s for:\n"%s"' % (
+                        row[self.fields['username']],
+                        row[self.fields['banunt']],
+                        row[self.fields['bancom']]
+                    )
+                )
                 raise Return()
 
             ban_until = t.to_str(t.now_dt() + timedelta(hours=ban_time))
@@ -286,10 +316,14 @@ class PollingHandler(WebSocketHandler):
             log.info('ban done')
 
             # Modify user's websocket object
-            yield self.pubsub.call("PUBLISH", channel, str({'user': row['user'],
-                                                             'until': ban_until,
-                                                               'time': ban_time,
-                                                         'reason': ban_reason}))
+            yield self.pubsub.call(
+                "PUBLISH", channel, str({
+                    'user':   row[self.fields['username']],
+                    'until':  ban_until,
+                    'time':   ban_time,
+                    'reason': ban_reason
+                })
+            )
 
         elif channel == 'load':
             log.info('load more!')

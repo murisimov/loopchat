@@ -1,0 +1,224 @@
+@import url(https://fonts.googleapis.com/css?family=Roboto+Condensed&subset=latin,cyrillic);
+
+body {
+  margin: 0px;
+  padding: 0px;
+  outline: 0px;
+  border: 0px;
+  font-family: 'Roboto Condensed', sans-serif;
+  font-size: 15px;
+}
+
+img {vertical-align: baseline;}
+
+*:focus {outline:none;}
+
+#chat {
+  position: relative;
+  width: 260px;
+  height: 430px;
+  border-radius: 2px;
+  background: #ffd9b3;
+}
+
+#chat_head {
+  position: relative;
+  width: 100%;
+  height: 30px;
+  padding-top: 5px;
+  background: #ffd9b3;
+  z-index: 2;
+}
+
+#chat_load {
+  font-size: 14px;
+  text-align: center;
+  width: 250px;
+  height: 25px;
+  line-height: 24px;
+  margin: 0px 5px 5px 5px;
+  background: darksalmon;
+  color: dimgray;
+}
+#chat_load:active {background: #F5C2B0;}
+#chat_load:hover {cursor: pointer;}
+
+#chat_body {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  background: #ffd9b3;
+  z-index: 2;
+  overflow: hidden;
+}
+
+.info {
+    position: absolute;
+    left: 5px;
+    top: -60px;
+    width: 223px;
+    height: 48px;
+    padding: 5px;
+    background: tomato;
+    color: white;
+    z-index: 1;
+    border: 1px solid white;
+}
+
+.info_text {
+  position: absolute;
+  width: 195px;
+  height: 50px;
+  overflow: auto;
+}
+
+.info_close, #banner_close {
+  height: 20px;
+  width: 20px;
+  float: right;
+  margin: 8px 8px 0px 0px;
+  background: #C62828;
+  border-radius: 10px;
+  color: white;
+  text-align: center;
+}
+.info_close {margin: 0px 0px 10px 10px;}
+
+.info_close:hover, #banner_close:hover {cursor: pointer;}
+.info_close:active, #banner_close:active {background: #E0ABAB;}
+#chat_overview {
+  height: 336px;
+  width: 250px;
+  margin: 0 auto;
+  padding-bottom: 5px;
+  background: white;
+  overflow-y: scroll;
+}
+
+#chat_input {
+  position: absolute;
+  display: inline-block;
+  height: 40px;
+  width: 200px;
+  margin: 5px 0px 0px 5px;
+  padding: 5px;
+  background: white;
+  /*word-wrap: break-word;*/
+  overflow: auto;
+}
+
+#chat_filler {
+  display: inline-block;
+  float: right;
+  height: 50px;
+  width: 40px;
+  margin: 5px 5px 5px 0px;
+  background: white;
+}
+
+#chat_send {
+  height: 30px;
+  width: 30px;
+  border-radius: 15px;
+  margin: 10px 5px 0px 5px;
+  background: rgb(143, 255, 168);
+}
+#chat_send:hover {cursor: pointer;}
+
+.msg {
+  width: 215px;
+  margin: 5px 5px 0px 5px;
+  padding: 4px;
+  border-radius: 3px;
+  /*word-wrap: break-word;*/
+  color: #464650;
+}
+
+.msg-user {background: lightgreen;}
+.msg-admin {
+  background: #03A9F4;
+  color: #333333;
+}
+.msg-system {
+  width: 213px;
+  margin: 5px 5px 0px 5px;
+  padding: 5px;
+  border-radius: 3px;
+  /*word-wrap: break-word;*/
+  color: #464650;
+  background: #ff6666;
+}
+
+.user_avatar {
+  width: 25px;
+  height: 25px;
+  border: 1px solid #D8C7BE;
+  border-radius: 3px;
+}
+.nick_and_time {display: inline-block; font-size: 13px; margin-left: 5px;}
+
+.buttons {
+  width: 10px;
+  height: 12px;
+  border-radius: 6px;
+  border-style: none;
+  margin: 1.5px;
+  float: right;
+  color: white;
+}
+.buttons:hover {cursor: pointer;}
+.ban {background: deeppink;}
+.ban:active {background: #F985C4;}
+.delete {background: red;}
+.delete:active {background: black;}
+.edit {background: #ff8533;}
+.edit:active {background: #FFBD91;}
+.quote {background: #b8b894;}
+.quote:active {background: #EFEFEF;}
+.reply {background: #6666ff;}
+.reply:active {background: #A9A9FB;}
+.confirm {background: #00cc44;}
+
+.msg_field {max-width: 98%; word-break: break-word;}
+.quote-user {
+  display: block;
+  min-width: 90%;
+  max-width: 98%;
+  background: #D8D7D7;
+  padding: 2px 2px 4px 3px;
+  border-radius: 3px;
+  margin: 0px 0px 3px 0px;
+}
+.quote-msg {
+  background: #FFFFFF;
+  padding: 3px 20px 3px 3px;
+  border-radius: 3px;
+}
+.editing {background: white;}
+
+/* Animations */
+@keyframes slideUpDelay {
+    0% { transform: translateY(0); }
+    1%, 99% { transform: translateY(100%); }
+    100% { transform: translateY(0); }
+}
+
+@-webkit-keyframes slideUpDelay {
+    0% { -webkit-transform: translateY(0); }
+    1%, 99% { -webkit-transform: translateY(100%); }
+    100% { -webkit-transform: translateY(0); }
+}
+@-moz-keyframes slideUpDelay {
+    0% { -moz-transform: translateY(0); }
+    1%, 99% { -moz-transform: translateY(100%); }
+    100% { -moz-transform: translateY(0); }
+}
+
+.slider {
+  animation-name: slideUpDelay;
+  -moz-animation-name: slideUpDelay;
+  -webkit-animation-name: slideUpDelay;
+  animation: slideUpDelay 60s linear forwards;
+  -moz-animation: slideUpDelay 60s linear forwards;
+  -webkit-animation: slideUpDelay 60s linear forwards;
+}

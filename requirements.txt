@@ -1,0 +1,5 @@
+tornado==4.3
+futures==3.0.5
+redis==2.10.5
+tornadis==0.7.0
+TorMySQL==0.2.2

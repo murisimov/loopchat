@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" type="text/css" href="/static/css/common.css" />
+  <script src="https://code.jquery.com/jquery-2.2.3.min.js" integrity="sha256-a23g1Nt4dtEYOj7bR+vTu7+T8VP13humZFBJNIYoEJo=" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div id="chat">
+        <div id="chat_head">
+            <div id="chat_load"><b>LOAD MORE</b></div>
+        </div>
+        <div id="chat_body">
+            <!-- Окно с сообщениями -->
+            <div id="chat_overview">
+
+            </div>
+            <!-- Окно с текстом для ввода -->
+            <div id="chat_input" contenteditable="true">
+            </div>
+            <!-- Дополняющий контейнер с кнопкой, справа от окна ввода -->
+            <div id="chat_filler">
+                <button id="chat_send"></button>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" charset="utf-8">
+
+        //var rand = function() {
+        //        return Math.random().toString(36).substr(2); // remove `0.`
+        //    };
+
+        // Implement string format method if isn't present
+        if (!String.prototype.format) {
+          String.prototype.format = function() {
+            var args = arguments;
+            return this.replace(/{(\d+)}/g, function(match, number) {
+              return typeof args[number] != 'undefined'
+                ? args[number]
+                : match
+              ;
+            });
+          };
+        }
+
+        //var user = 'murisimov';
+        var user = 'kotakon';
+
+        var height = 0;
+
+        var msg_template = '<div id="{0}" class="msg {1}">' +
+                               '<img class="user_avatar" src="{2}" />' +
+                               '<span class="nick_and_time">' +
+                                   '<div class="nick"><b>{3}</b></div>' +
+                                   '<div class="time">{4}</div>' +
+                               '</span>' +
+                               '<button class="buttons quote"></button>' +
+                               '<button class="buttons reply"></button>' +
+                               '<div class="msg_field">{5}</div>' +
+                           '</div>';
+
+        var info_template = '<div class="info slider">' +
+                                '<span class="info_text">{0}</span>' +
+                                '<span class="info_close">×</span>' +
+                            '</div>';
+
+        var sys_template = '<div class="msg-system">' +
+                               '<span class="system_head"><b>System:  </b></span>' +
+                               '<span class="system_body">{0}</span>' +
+                           '</div>';
+
+        var closed_template = '<div class="msg-system">System: Connection ' +
+                                 'closed, please try to reload the page.' +
+                             '</div>';
+
+        var create_msg = function (data) {
+            return msg_template.format(data.id,
+                                       data.type,
+                                       data.avatar,
+                                       data.nick,
+                                       data.datetime.split(' ')[0],
+                                       data.message);
+        };
+
+        var create_info_msg = function (data) {
+            return info_template.format(data.msg);
+        };
+
+        var create_sys_msg = function (data) {
+            return sys_template.format(data.msg);
+        };
+
+        var operate = {
+            common: function (data) {
+               var message = create_msg(data);
+               $('#chat_overview').append(message);
+               scrolldown();
+            },
+            delete: function (data) {
+               $('#' + data.id).remove();
+            },
+            edit: function (data) {
+              $('#' + data.id + ' .msg_field').html(data.message);
+            },
+            info: function (data) {
+                console.log(data);
+                var msg = create_info_msg(data);
+                $('#chat_body').append(msg);
+            },
+            load: function (data) {
+                console.log(data);
+                $.each(data, function (i, msg) {
+                    var message = create_msg(msg);
+                    $('#chat_overview').prepend(message);
+                });
+            },
+            open: function (data) {
+                console.log(data);
+                $.each(data, function (i, msg) {
+                    var message = create_msg(msg);
+                    $('#chat_overview').prepend(message);
+                });
+                scrolldown();
+            },
+            system: function (data) {
+                var msg = create_sys_msg(data);
+                $('#chat_overview').append(msg);
+                scrolldown();
+            },
+        }
+
+        var scrolldown = function () {
+           $('.msg').each(function(i, value) {
+               height += (parseInt($(this).height()) + 10);
+           });
+           $('#chat_overview').animate({scrollTop: height}, 100);
+        };
+
+        var prepare = function (input) {
+            //console.log('prepare!');
+            return $(input).html()
+                                  .replace(/&nbsp;/gi,'')
+                                  .replace(/(<br\s*\/?>){2,}/gi, '<br>')
+                                  .trim();
+        };
+
+        function placeCaretAtEnd(el) {
+            el.focus();
+            if (typeof window.getSelection != "undefined"
+                    && typeof document.createRange != "undefined") {
+                var range = document.createRange();
+                range.selectNodeContents(el);
+                range.collapse(false);
+                var sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+            } else if (typeof document.body.createTextRange != "undefined") {
+                var textRange = document.body.createTextRange();
+                textRange.moveToElementText(el);
+                textRange.collapse(false);
+                textRange.select();
+            }
+        }
+
+        $(document).ready(function () {
+            if ("MozWebSocket" in window) {
+                WebSocket = MozWebSocket;
+            }
+            if (WebSocket) {
+                var ws = new WebSocket("ws://46.4.78.38:8181/common_channel/" + user);
+                var send = function(message) {
+                    ws.send(JSON.stringify(message))
+                }
+                ws.onopen = function () {};
+
+                ws.onmessage = function (evt) {
+                    var data = $.parseJSON(evt.data);
+                    console.log(data);
+                    operate[data[0]](data[1]);
+                    //scrolldown();
+                };
+
+                ws.onclose = function () {};
+
+                $('#chat_load').on('click', (function () {
+                    var id = $('.msg:first').attr('id'),
+                        message = new Array('load', id);
+                    send(message);
+                }));
+
+                $(document).on("click", ".reply", function () {
+                    if (ws.readyState === 3) {
+                        $('#chat_overview').append(closed_template);
+                        scrolldown();
+                    } else {
+                        var id = $(this).parent().attr('id'),
+                            nick = $('#' + id + ' .nick_and_time .nick').eq(0).clone();
+                        $(nick)
+                               .html($(nick).html() + ',')
+                               .css('display', 'inline-block')
+                               .attr('contenteditable', false);
+                        $('#chat_input .nick').remove();
+                        //$('#chat_input').focus();
+                        var quote = $('#chat_input .nick_and_time');
+                        if (quote.length) {
+                            //$('&nbsp;&nbsp;').insertAfter(quote);
+                            $(nick).insertAfter(quote);
+                            placeCaretAtEnd($('#chat_input').get(0));
+                        } else {
+                            $('#chat_input')
+                                            .prepend('&nbsp;&nbsp;')
+                                            .prepend(nick);
+                            placeCaretAtEnd($('#chat_input').get(0));
+                        }
+                    }
+                });
+
+                $(document).on("click", ".quote", function () {
+                    if (ws.readyState === 3) {
+                        $('#chat_overview').append(closed_template);
+                        scrolldown();
+                    } else {
+                        var id = $(this).parent().attr('id'),
+                            usr = $('#' + id + ' .nick_and_time').eq(0).clone(),
+                            msg = $('#' + id + ' .msg_field').eq(0).clone();
+                        console.log(usr);
+                        console.log(msg);
+                        $(usr).attr('contenteditable', false);
+                        $(msg).attr('contenteditable', false);
+                        var to_add = $(usr).append(msg);
+                        //$('#chat_input .nick_and_time').remove();
+                        //$('#chat_input .msg_field').remove();
+                        //$('#chat_input').focus();
+                        $('#chat_input .nick_and_time').remove();
+                        $('#chat_input')
+                                        .prepend('<br><br>')
+                                        .prepend('&nbsp;&nbsp;')
+                                        //.prepend('</div>')
+                                        //.prepend(msg)
+                                        .prepend(to_add)
+                                        .animate({scrollTop: 300}, 100);
+                                        //.prepend('<div class="cont" contenteditable="false">')
+                                        //.focus();
+                        //$('#chat_input .cont')
+                        //                      .css('display', 'inline-block')
+                        //                      .attr('contenteditable', false);
+                        $('#chat_input .nick_and_time').addClass('quote-user');
+                        $('#chat_input .msg_field').addClass('quote-msg');
+                        placeCaretAtEnd($('#chat_input').get(0));
+                    }
+                });
+
+                $('#chat_send').on('click', (function () {
+                    if (ws.readyState === 3) {
+                        $('#chat_overview').append(closed_template);
+                        scrolldown();
+                    } else {
+                        var message = prepare($('#chat_input'));
+                        if (message) {
+                            //var to_send = new Array(user, message);
+                            var to_send = ['common', message];
+                            send(to_send);
+                            $('#chat_input').html('');
+                        }
+                    }
+                }));
+
+                $('#chat_input').on('keypress', (function (event) {
+                    event = event || window.event // For IE
+                    if (event.which == 13 && event.shiftKey === false) {
+                        event.preventDefault();
+                        if (ws.readyState === 3) {
+                            $('#chat_overview').append(closed_template);
+                            scrolldown();
+                        } else {
+                            var message = prepare(this);
+                            if (message) {
+                                var to_send = ['common', message];
+                                send(to_send);
+                                $(this).html('');
+                            }
+                        }
+                    }
+                }));
+
+                $(document).on('click', '.info_close', (function () {
+                    $(this).parent().removeClass('slider');
+                }));
+
+            } else {
+                alert("WebSocket not supported");
+            }
+        });
+    </script>
+</body>
+</html>

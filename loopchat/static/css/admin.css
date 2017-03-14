@@ -1,0 +1,109 @@
+@import url(https://fonts.googleapis.com/css?family=Roboto+Condensed&subset=latin,cyrillic);
+
+#banner {
+  position: absolute;
+  top: 0;
+  left: 200px;
+  width: 160px;
+  height: 180px;
+  border-radius: 2px;
+  background: #A59E97;
+  z-index: 1;
+}
+#banner_time {
+  display: inline-block;
+  width: 60px;
+  height: 20px;
+  line-height: 5px;
+  margin: 0px 0px 0px 5px;
+  color: white;
+  vertical-align: middle;
+}
+#banner_user {
+  display: inline-block;
+  margin: 0px 0px 0px 5px;
+  color: white;
+}
+#banner_hours {width: 55px;}
+#banner_hours-button {
+  margin: 5px 0px 0px 0px;
+  font-size: 11px;
+  border-radius: 2px;
+  background: white;
+}
+#banner_reason {
+  width: 150px;
+  height: 85px;
+  padding: 5px;
+  background: white;
+  margin: 5px;
+}
+#banner_wrapper {width: 160px;}
+#banner_button {  height: 20px; line-height: 8px;}
+#chat {width: 360px; height: 430px; margin-top: 15px;}
+#chat_head {height: 35px;}
+#chat_load {width: 350px;}
+#chat_body {height: 395px;}
+.info {width: 333px; height: 60px;}
+.info_text {width: 300px;}
+.info_close {margin: 0px 0px 10px 10px;}
+#chat_overview {width: 350px;}
+#chat_input {height: 50px; width: 200px;}
+#chat_channel {
+  height: 50px;
+  width: 110px;
+  margin: 5px 0px 5px 0px;
+  float: right;
+  background: white;
+}
+#channel-button {
+  font-size: 13px;
+  margin: 10px 0px 0px 10px;
+  background: seashell;
+  border-radius: 2px;
+}
+#channel {width: 100px;}
+fieldset {border: 0;}
+.msg {width: 323px;}
+.msg-system {width: 323px;}
+ul#channel-menu li {font-size: 13px;}
+ul#banner_hours-menu li {font-size: 11px;}
+ul#channel-menu li:nth-child(1) {background: seashell;}
+ul#channel-menu li:nth-child(2) {background: #E57373; color: ghostwhite;}
+ul#channel-menu li:nth-child(3) {background: rgba(103, 220, 57, 0.58);}
+
+/* Animations */
+@-webkit-keyframes slideOutRight {
+  0% {
+    -webkit-transform: translateX(0);
+    transform: translateX(0);
+  }
+
+  100% {
+    -webkit-transform: translateX(100%);
+    transform: translateX(100%);
+  }
+}
+
+@keyframes slideOutRight {
+  0% {
+    -webkit-transform: translateX(0);
+    -ms-transform: translateX(0);
+    transform: translateX(0);
+  }
+
+  100% {
+    -webkit-transform: translateX(100%);
+    -ms-transform: translateX(100%);
+    transform: translateX(100%);
+  }
+}
+
+.slideOutRight {
+  -webkit-animation-name: slideOutRight;
+  animation-name: slideOutRight;
+  /*-webkit-transform: translateX(-130px);*/
+  -webkit-animation: slideOutRight 0.3s linear forwards;
+  /*-moz-transform:    translateX(-130px);*/
+  -moz-animation:    slideOutRight 0.3s linear forwards;
+}

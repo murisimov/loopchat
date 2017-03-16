@@ -26,12 +26,12 @@ customization, you'll have to provide the following variables:
 - `isbann` &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_Is user banned? (bool or 1/0 integer)_
 - `banuntil` &nbsp;&nbsp;&nbsp;_When does ban expire? (datetime)_
 - `bancomment` _Ban comment (string)_
-- `avatar` &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_User avatar (string, URL)_
+- `avatar` &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_User avatar (string, URL)_
 
 ---
 
 ---
-**Here is the example of the configuration:**
+**Here is an example of the configuration:**
 ```python
 
 """
@@ -42,8 +42,8 @@ DATABASE CONNECTION
 ##########################
 #db_host   = '127.0.0.1' #
 #db_user   = 'root'      #
-#db_passwd = ''          #
 ##########################
+#db_passwd = ''          #
 
 db_user   = 'pirojok'
 db_passwd = 'smetanka28'

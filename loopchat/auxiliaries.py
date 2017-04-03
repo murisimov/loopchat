@@ -15,6 +15,7 @@ adminlog_handler.setFormatter(LogFormatter(color=False))
 log.addHandler(adminlog_handler)
 log.propagate = False
 
+
 def authenticated(func):
     @wraps(func)
     def wrapper(handler, *args, **kwargs):
@@ -22,6 +23,7 @@ def authenticated(func):
             return func(handler, *args, **kwargs)
         return handler.redirect('/signin')
     return wrapper
+
 
 def benchmark(func):
     @wraps(func)
@@ -33,11 +35,14 @@ def benchmark(func):
         return result
     return wrapper
 
+
 def list_eval(L):
     return [ literal_eval(e) for e in L ]
 
+
 def is_text(value):
     return isinstance(value, str) or isinstance(value, unicode)
+
 
 class TimeTrack:
     def __init__(self):

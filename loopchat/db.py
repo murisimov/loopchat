@@ -9,7 +9,7 @@ class CRUD(object):
                                                  user="root", passwd="",):
         self.db = ConnectionPool(
             max_connections = 1000,       # Max open connections
-            idle_seconds = 7200,          # Conntion idle timeout time, 0 is not timeout
+            idle_seconds = 7200,          # Connection idle timeout time, 0 is not timeout
             wait_connection_timeout = 3,  # Wait connection timeout
             host    = host,
             user    = user,

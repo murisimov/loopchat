@@ -19,16 +19,19 @@ from loopchat.monitoring import GetStats
 redis_main = tornadis.Client()
 redis_main.connect()
 
+
 @coroutine
 def users():
     user_count = yield redis_main.call("GET", 'users')
     yield redis_main.call("PUBLISH", 'users', user_count)
+
 
 @coroutine
 def stats():
     stats = yield GetStats().stats()
     yield redis_main.call("PUBLISH", "stats", json_encode(stats))
     #logging.warning(stats)
+
 
 def main():
     # Collect and sent data every second
